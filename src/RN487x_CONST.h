@@ -31,9 +31,9 @@
 #define DELAY_BEFORE_CMD      100   // delay before the first '$' to enter into command mode
 #define DEFAULT_CMD_TIMEOUT   300   // default timeout
 #define RESET_CMD_TIMEOUT     1000
-#define CRLF                  "\r\n"
-#define CR                    '\r'
-#define LF                    '\n'
+#define BLE_CRLF                  "\r\n"
+#define BLE_CR                    '\r'
+#define BLE_LF                    '\n'
 
 // ------------------- Commands -----------------------
 #define CMD_CHAR              '$'
@@ -165,7 +165,7 @@
 #define DEVICE_MODEL          "RN"
 #define REBOOTING_RESP        "Rebooting"
 #define NONE_RESP             "none"
-#define SCANNING_RESP         "Scanning"		
+#define SCANNING_RESP         "Scanning"
 
 //-- Events
 #define REBOOT_EVENT          "%REBOOT%"

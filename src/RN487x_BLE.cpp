@@ -83,7 +83,7 @@ void Rn487xBle::hwInit(void)
 
   wakePin = -1;
   resetPin = -1;
-  
+
   // Hardware reset
   hwReset();
 
@@ -94,11 +94,11 @@ void Rn487xBle::hwInit(void)
 // *********************************************************************************
 // Hardware Init. procedure
 // *********************************************************************************
-// Input : uint8_t resetBLEPin - the digital I/O pin number connected to the BLE 
+// Input : uint8_t resetBLEPin - the digital I/O pin number connected to the BLE
 //                               module's reset pin. Use -1 to disable
 //                               library's reset of BLE module
 // Input : uint8_t wakeBLEPin - the digital I/O pin number connected to the BLE
-//                               module's wake pin. Use -1 to disable library's 
+//                               module's wake pin. Use -1 to disable library's
 //                               use of wake pin
 // Output: void
 // *********************************************************************************
@@ -108,7 +108,7 @@ void Rn487xBle::hwInit(uint8_t resetBLEPin, uint8_t wakeBLEPin)
 
   wakePin = wakeBLEPin;
   resetPin = resetBLEPin;
-  
+
   // Hardware reset
   hwReset();
 
@@ -233,7 +233,7 @@ void Rn487xBle::hwSleep(void)
 bool Rn487xBle::enterCommandMode(void)
 {
   debugPrintLn("[enterCommandMode]");
-  
+
   // To enter Command mode from Data mode, type $$$ character sequence after 100 ms delay before the first $
   delay(DELAY_BEFORE_CMD);
 
@@ -241,16 +241,16 @@ bool Rn487xBle::enterCommandMode(void)
   cleanInputBuffer();
 
   this->bleSerial->print(ENTER_CMD);
-  
+
   // This command will reply with either "CMD> " or "CMD<CR><LF>" depending on if
   // the command prompt is turned on or off. This routine needs to detect which
-  // reply comes back, and set the commandPromptEnabled variable appropriately. This 
+  // reply comes back, and set the commandPromptEnabled variable appropriately. This
   // reply takes less than 15ms to arrive. Each string is 5 bytes long.
 
   debugPrintLn("[expectResponse] expecting CMD> or CMD");
 
   unsigned long previous = millis();
-  
+
   while ((millis() - previous < 15) && (this->bleSerial->available() < 5))
   {
     debugPrint(".");
@@ -317,10 +317,10 @@ void Rn487xBle::sendCommand(String stream)
 {
   debugPrint("[sendCommand] " );
   debugPrintLn(stream);
-  
+
   this->flush();
   cleanInputBuffer();
-  stream.concat(CR);
+  stream.concat(BLE_CR);
   bleSerial->print(stream);
 }
 
@@ -339,7 +339,7 @@ void Rn487xBle::sendData(char *data, uint16_t dataLen)
 bool Rn487xBle::retrieveBtAddress(void)
 {
   if (getSettings(0, 6))
-  {    
+  {
     btAddress[0] = uartBuffer[10];
     btAddress[1] = uartBuffer[11];
     btAddress[2] = uartBuffer[8];
@@ -494,7 +494,7 @@ bool Rn487xBle::setConPower(uint8_t value)
   debugPrintLn(value);
 
 #if (MIN_POWER_OUTPUT != 0)
-  if (value < MIN_POWER_OUTPUT) 
+  if (value < MIN_POWER_OUTPUT)
   {
     value = MIN_POWER_OUTPUT;
   }
@@ -503,7 +503,7 @@ bool Rn487xBle::setConPower(uint8_t value)
   {
     value = MAX_POWER_OUTPUT;
   }
-   
+
   uint8_t len = strlen(SET_CONN_POWER);
   char c[1];
   sprintf(c, "%d", value);
@@ -521,9 +521,9 @@ bool Rn487xBle::setConPower(uint8_t value)
 // *********************************************************************************
 // Set Serialized Device Name
 // *********************************************************************************
-// Sets a serialized Bluetooth name for the device where the name is up to 
-// MAX_SERIALIZED_NAME_LEN alphanumeric characters. This method automatically 
-// appends the last two bytes of the Bluetooth MAC address to the name which is 
+// Sets a serialized Bluetooth name for the device where the name is up to
+// MAX_SERIALIZED_NAME_LEN alphanumeric characters. This method automatically
+// appends the last two bytes of the Bluetooth MAC address to the name which is
 // useful for generating a custom name with unique numbering.
 // Input : *newName
 // Output: bool true if successfully executed
@@ -605,7 +605,7 @@ bool Rn487xBle::setDevName(const char *newName)
 bool Rn487xBle::enableLowPower(void)
 {
   debugPrintLn("[enableLowPower]");
-  
+
   sendCommand(SET_LOW_POWER_ON);
   if (expectResponse(AOK_RESP, DEFAULT_CMD_TIMEOUT))
   {
@@ -624,7 +624,7 @@ bool Rn487xBle::enableLowPower(void)
 bool Rn487xBle::disableLowPower(void)
 {
   debugPrintLn("[disableLowPower]");
-  
+
   sendCommand(SET_LOW_POWER_OFF);
   if (expectResponse(AOK_RESP, DEFAULT_CMD_TIMEOUT))
   {
@@ -663,7 +663,7 @@ bool Rn487xBle::setSupportedFeatures(uint16_t bitmap)
 // *********************************************************************************
 // Sets the default services to be supported by the module in GAP server role
 // *********************************************************************************
-// Supporting service in server role means that the host MCU must supply the values 
+// Supporting service in server role means that the host MCU must supply the values
 // of all characteristics in supported services and to provide client access to
 // those values upon request. Once the service bitmap is modified, the device must
 // reboot() to make the new services effective.
@@ -682,7 +682,7 @@ bool Rn487xBle::setDefaultServices(uint8_t bitmap)
   this->flush();
   memcpy(uartBuffer, SET_DEFAULT_SERVICES, len);
   memcpy(&uartBuffer[len], c, newLen);
-  
+
   sendCommand(uartBuffer);
   if (expectResponse(AOK_RESP, DEFAULT_CMD_TIMEOUT))
   {
@@ -702,7 +702,7 @@ bool Rn487xBle::setDefaultServices(uint8_t bitmap)
 bool Rn487xBle::clearAllServices(void)
 {
   debugPrintLn("[cleanAllServices]");
-  
+
   sendCommand(CLEAR_ALL_SERVICES);
   if (expectResponse(AOK_RESP, DEFAULT_CMD_TIMEOUT))
   {
@@ -721,7 +721,7 @@ bool Rn487xBle::clearAllServices(void)
 bool Rn487xBle::startAdvertising(void)
 {
   debugPrintLn("[startAdvertising]");
-  
+
   sendCommand(START_DEFAULT_ADV);
   if (expectResponse(AOK_RESP, DEFAULT_CMD_TIMEOUT))
   {
@@ -734,7 +734,7 @@ bool Rn487xBle::startAdvertising(void)
 // Start Custom Advertisement
 // *********************************************************************************
 // The advertisement is undirect connectable. (note, with no second parameter, this
-//   function will use the form of the START_CUSTOM_ADV command where no second 
+//   function will use the form of the START_CUSTOM_ADV command where no second
 //   parameter is sent, thus making advertisements last forever)
 // Input : interval - the number of milliseconds between advertisements
 // Output: bool true if successfully executed
@@ -751,7 +751,7 @@ bool Rn487xBle::startCustomAdvertising(uint16_t interval)
   this->flush();
   memcpy(uartBuffer, START_CUSTOM_ADV, len);
   memcpy(&uartBuffer[len], parameters, newLen);
-  
+
   sendCommand(uartBuffer);
 
   if (expectResponse(AOK_RESP, DEFAULT_CMD_TIMEOUT))
@@ -781,7 +781,7 @@ bool Rn487xBle::startCustomAdvertising(uint16_t interval, uint16_t totalAdTime)
   this->flush();
   memcpy(uartBuffer, START_CUSTOM_ADV, len);
   memcpy(&uartBuffer[len], parameters, newLen);
-  
+
   sendCommand(uartBuffer);
 
   if (expectResponse(AOK_RESP, DEFAULT_CMD_TIMEOUT))
@@ -801,7 +801,7 @@ bool Rn487xBle::startCustomAdvertising(uint16_t interval, uint16_t totalAdTime)
 bool Rn487xBle::stopAdvertising(void)
 {
   debugPrintLn("[stopAdvertising]");
-  
+
   sendCommand(STOP_ADV);
   if (expectResponse(AOK_RESP, DEFAULT_CMD_TIMEOUT))
   {
@@ -820,7 +820,7 @@ bool Rn487xBle::stopAdvertising(void)
 bool Rn487xBle::clearImmediateAdvertising(void)
 {
   debugPrintLn("[clearImmediateAdvertising]");
-  
+
   sendCommand(CLEAR_IMMEDIATE_ADV);
   if (expectResponse(AOK_RESP, DEFAULT_CMD_TIMEOUT))
   {
@@ -840,7 +840,7 @@ bool Rn487xBle::clearImmediateAdvertising(void)
 bool Rn487xBle::clearPermanentAdvertising(void)
 {
   debugPrintLn("[clearPermanentAdvertising]");
-  
+
   sendCommand(CLEAR_PERMANENT_ADV);
   if (expectResponse(AOK_RESP, DEFAULT_CMD_TIMEOUT))
   {
@@ -859,7 +859,7 @@ bool Rn487xBle::clearPermanentAdvertising(void)
 bool Rn487xBle::clearImmediateBeacon(void)
 {
   debugPrintLn("[clearImmediateBeacon]");
-  
+
   sendCommand(CLEAR_IMMEDIATE_BEACON);
   if (expectResponse(AOK_RESP, DEFAULT_CMD_TIMEOUT))
   {
@@ -880,7 +880,7 @@ bool Rn487xBle::clearImmediateBeacon(void)
 bool Rn487xBle::clearPermanentBeacon(void)
 {
   debugPrintLn("[clearPermanentBeacon]");
-  
+
   sendCommand(CLEAR_PERMANENT_BEACON);
   if (expectResponse(AOK_RESP, DEFAULT_CMD_TIMEOUT))
   {
@@ -1028,7 +1028,7 @@ bool Rn487xBle::startPermanentBeacon(uint8_t adType, const char adData[])
 bool Rn487xBle::startScanning(void)
 {
   debugPrintLn("[startScanning]");
-  
+
   sendCommand(START_DEFAULT_SCAN);
   if (expectResponse(SCANNING_RESP, DEFAULT_CMD_TIMEOUT))
   {
@@ -1042,7 +1042,7 @@ bool Rn487xBle::startScanning(void)
 // *********************************************************************************
 // Method available only when the module is set as a Central (GAP) device and is
 // ready for scan before establishing connection.
-// The user has the option to specify the scan interval and scan window as first 
+// The user has the option to specify the scan interval and scan window as first
 // and second parameter, respectively. Each unit is 0.625 millisecond. Scan interval
 // must be larger or equal to scan window. The scan interval and the scan window
 // values can range from 2.5 milliseconds to 10.24 seconds.
@@ -1061,7 +1061,7 @@ bool Rn487xBle::startScanning(uint16_t scanInterval, uint16_t scanWindow)
   uint8_t newLen = strlen(c1);
   char c2[4];
   sprintf(c2, "%04X", scanWindow);
-  
+
   this->flush();
   memcpy(uartBuffer, START_CUSTOM_SCAN, len);
   memcpy(&uartBuffer[len], c1, newLen);
@@ -1085,7 +1085,7 @@ bool Rn487xBle::startScanning(uint16_t scanInterval, uint16_t scanWindow)
 bool Rn487xBle::stopScanning(void)
 {
   debugPrintLn("[stopScanning]");
-  
+
   sendCommand(STOP_SCAN);
   if (expectResponse(AOK_RESP, DEFAULT_CMD_TIMEOUT))
   {
@@ -1102,9 +1102,9 @@ bool Rn487xBle::stopScanning(void)
 // included in the white list does not appear in the scan results.
 // As a peripheral, any device not listed in the white list cannot be connected
 // with a local device. RN4870/71 supports up to 16 addresses in the white list.
-// A random address stored in the white list cannot be resolved. If the peer 
-// device does not change the random address, it is valid in the white list. 
-// If the random address is changed, this device is no longer considered to be on 
+// A random address stored in the white list cannot be resolved. If the peer
+// device does not change the random address, it is valid in the white list.
+// If the random address is changed, this device is no longer considered to be on
 // the white list.
 // Input : bool addrType = 0 if following address is public (=1 for private)
 //         const char *addr 6-byte address in hex format
@@ -1158,11 +1158,11 @@ bool Rn487xBle::addMacAddrWhiteList(bool addrType, const char *addr)
 // *********************************************************************************
 // Add all currently bonded devices to the white list
 // *********************************************************************************
-// The random address in the white list can be resolved with this method for 
-// connection purpose. If the peer device changes its resolvable random address, 
-// the RN4870/71 is still able to detect that the different random addresses are 
-// from the same physical device, therefore, allows connection from such peer 
-// device. This feature is particularly useful if the peer device is a iOS or 
+// The random address in the white list can be resolved with this method for
+// connection purpose. If the peer device changes its resolvable random address,
+// the RN4870/71 is still able to detect that the different random addresses are
+// from the same physical device, therefore, allows connection from such peer
+// device. This feature is particularly useful if the peer device is a iOS or
 // Android device which uses resolvable random.
 // Input : void
 // Output: bool true if successfully executed
@@ -1170,7 +1170,7 @@ bool Rn487xBle::addMacAddrWhiteList(bool addrType, const char *addr)
 bool Rn487xBle::addBondedWhiteList(void)
 {
   debugPrintLn("[addBondedWhiteList]");
-  
+
   sendCommand(ADD_BONDED_WHITE_LIST);
   if (expectResponse(AOK_RESP, DEFAULT_CMD_TIMEOUT))
   {
@@ -1191,7 +1191,7 @@ bool Rn487xBle::clearWhiteList(void)
   debugPrintLn("[clearWhiteList]");
 
   whiteListCnt = 0;
-  
+
   sendCommand(CLEAR_WHITE_LIST);
   if (expectResponse(AOK_RESP, DEFAULT_CMD_TIMEOUT))
   {
@@ -1210,7 +1210,7 @@ bool Rn487xBle::clearWhiteList(void)
 bool Rn487xBle::killConnection(void)
 {
   debugPrintLn("[killConnection]");
-  
+
   sendCommand(KILL_CONNECTION);
   if (expectResponse(AOK_RESP, DEFAULT_CMD_TIMEOUT))
   {
@@ -1222,7 +1222,7 @@ bool Rn487xBle::killConnection(void)
 // *********************************************************************************
 // Get the RSSI level
 // *********************************************************************************
-// Get the signal strength in dBm of the last communication with the peer device. 
+// Get the signal strength in dBm of the last communication with the peer device.
 // The signal strength is used to estimate the distance between the device and its
 // remote peer.
 // Input : void
@@ -1261,7 +1261,7 @@ bool Rn487xBle::getRSSI(void)
 bool Rn487xBle::reboot(void)
 {
   debugPrintLn("[reboot]");
-  
+
   sendCommand(REBOOT);
   if (expectResponse(REBOOTING_RESP, RESET_CMD_TIMEOUT))
   {
@@ -1276,8 +1276,8 @@ bool Rn487xBle::reboot(void)
 // *********************************************************************************
 // Sets the UUID of the public or the private service.
 // This method must be called before the setCharactUUID() method.
-// 
-// Input : const char *uuid 
+//
+// Input : const char *uuid
 //         can be either a 16-bit UUID for public service
 //         or a 128-bit UUID for private service
 // Output: bool true if successfully executed
@@ -1322,8 +1322,8 @@ bool Rn487xBle::setServiceUUID(const char *uuid)
 // *********************************************************************************
 // Sets private characteriticsthe UUID of the public or the private service.
 // This method must be called after the setServiceUUID() method.
-// 
-// Input : const char *uuid 
+//
+// Input : const char *uuid
 //         can be either a 16-bit UUID for public service
 //         or a 128-bit UUID for private service
 //         uint8_t property is a 8-bit property bitmap of the characteristics
@@ -1419,7 +1419,7 @@ bool Rn487xBle::writeLocalCharacteristic(uint16_t handle, const char value[])
 // Read local characteristic value as server
 // *********************************************************************************
 // Reads the content of the server service characteristic on the local device
-// by addresiing its handle. 
+// by addresiing its handle.
 // This method is effective with or without an active connection.
 // Input : uint16_t handle which corresponds to the characteristic of the server service
 // Output: bool true if successfully executed
@@ -1461,10 +1461,10 @@ bool Rn487xBle::readLocalCharacteristic(uint16_t handle)
 // If the RN4870/71 is not connected, the output is none.
 // If the RN4870/71 is connected, the buffer must contains the information:
 // <Peer BT Address>,<Address Type>,<Connection Type>
-// where <Peer BT Address> is the 6-byte hex address of the peer device; 
-//       <Address Type> is either 0 for public address or 1 for random address; 
-//       <Connection Type> specifies if the connection enables UART Transparent 
-// feature, where 1 indicates UART Transparent is enabled and 0 indicates 
+// where <Peer BT Address> is the 6-byte hex address of the peer device;
+//       <Address Type> is either 0 for public address or 1 for random address;
+//       <Connection Type> specifies if the connection enables UART Transparent
+// feature, where 1 indicates UART Transparent is enabled and 0 indicates
 // UART Transparent is disabled
 // Input : void
 // Output: int true if connected, (-1) if timeout occured, false if not connected
@@ -1550,14 +1550,14 @@ bool Rn487xBle::getSettings(uint16_t addr, uint8_t sizeToRead)
   uint8_t newLen = strlen(c1);
   char c2[2];
   sprintf(c2, "%02X", sizeToRead);
-  
+
   this->flush();
   memcpy(uartBuffer, GET_SETTINGS, len);
   memcpy(&uartBuffer[len], c1, newLen);
   memcpy(&uartBuffer[len+newLen], ",", 1);
   memcpy(&uartBuffer[len+newLen+1], c2, strlen(c2));
   sendCommand(uartBuffer);
-  
+
   previous = millis();
   while (millis() - previous < timeout)
   {
@@ -1576,7 +1576,7 @@ bool Rn487xBle::getSettings(uint16_t addr, uint8_t sizeToRead)
 // *********************************************************************************
 // Change any settings in configuration NVM
 // *********************************************************************************
-// Input : uint16_t 16-bit hex value that represents memory address of eFlash of 
+// Input : uint16_t 16-bit hex value that represents memory address of eFlash of
 //          the first byte of data. If more than one byte of data is provided, the
 //          memory address automatically increase
 //         const char* data value in hex format, up to 32-bytes
@@ -1590,7 +1590,7 @@ bool Rn487xBle::setSettings(uint16_t addr, const char *data)
   debugPrintLn(data);
   debugPrint("Len = ");
   debugPrintLn(dataLen);
-  
+
   uint16_t timeout = DEFAULT_CMD_TIMEOUT;
   unsigned long previous;
 
@@ -1605,7 +1605,7 @@ bool Rn487xBle::setSettings(uint16_t addr, const char *data)
   memcpy(&uartBuffer[len+newLen], ",", 1);
   memcpy(&uartBuffer[len+newLen+1], data, dataLen);
   sendCommand(uartBuffer);
-  
+
   previous = millis();
   while (millis() - previous < timeout)
   {
@@ -1634,7 +1634,7 @@ void Rn487xBle::flush(void)
 //  this->diagStream->print(" * Flushing :");
 //  this->diagStream->print(uartBuffer);
 //  this->diagStream->println(":");
-  
+
   memset(uartBuffer, 0, uartBufferLen);
 }
 
@@ -1678,7 +1678,7 @@ operationMode_t Rn487xBle::getOperationMode(void)
 // *********************************************************************************
 // Reads a buffer until the carriage return
 // *********************************************************************************
-// Reads a buffer until the carriage return from the device stream into the "buffer" 
+// Reads a buffer until the carriage return from the device stream into the "buffer"
 // starting at the "start" position of the buffer.
 // Input : char c
 //         char *buffer
@@ -1688,7 +1688,7 @@ operationMode_t Rn487xBle::getOperationMode(void)
 // *********************************************************************************
 uint16_t Rn487xBle::readUntilCR(char* buffer, uint16_t size, uint16_t start)
 {
-  int len = this->bleSerial->readBytesUntil(LF, buffer + start, size);
+  int len = this->bleSerial->readBytesUntil(BLE_LF, buffer + start, size);
   return len;
 }
 
@@ -1696,7 +1696,7 @@ uint16_t Rn487xBle::readUntilCR(char* buffer, uint16_t size, uint16_t start)
 // *********************************************************************************
 // Reads UART stream, parse the reception buffer
 // *********************************************************************************
-// Read UART stream - Parse the reception buffer - 
+// Read UART stream - Parse the reception buffer -
 // Input : const char* expectedResponse
 //       : uint16_t timeout (ms)
 // Output: bool true if expected response match into the received stream
@@ -1707,7 +1707,7 @@ bool Rn487xBle::expectResponse(const char* expectedResponse, uint16_t timeout)
   debugPrintLn(expectedResponse);
 
   unsigned long previous;
-  
+
   memset(uartBuffer, 0, uartBufferLen); // clear the buffer
   cleanInputBuffer();
   previous = millis();
